@@ -197,7 +197,7 @@ public final class MenuBarProvider {
   private class ListenerFunctions {
 
     void showOpenIndexDialog(ActionEvent e) {
-      new DialogOpener<>(openIndexDialogFactory).open(MessageUtils.getLocalizedMessage("openindex.dialog.title"), 600, 420,
+      new DialogOpener<>(openIndexDialogFactory).open(MessageUtils.getLocalizedMessage("openindex.dialog.title"), 800, 680,
           (factory) -> {});
     }
 

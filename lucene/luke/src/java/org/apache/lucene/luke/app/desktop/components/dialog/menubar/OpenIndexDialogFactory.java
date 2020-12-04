@@ -80,6 +80,14 @@ public final class OpenIndexDialogFactory implements DialogOpener.DialogFactory 
 
   private final JCheckBox noReaderCB = new JCheckBox();
 
+  private final JCheckBox getFromURICB = new JCheckBox();
+
+  private final JCheckBox customBucketProjectIdCB = new JCheckBox();
+
+  private final JTextField gsBucketTxtField = new JTextField();
+
+  private final JTextField gsProjectTxtField = new JTextField();
+
   private final JCheckBox useCompoundCB = new JCheckBox();
 
   private final JRadioButton keepLastCommitRB = new JRadioButton();
@@ -172,7 +180,7 @@ public final class OpenIndexDialogFactory implements DialogOpener.DialogFactory 
   }
 
   private JPanel basicSettings() {
-    JPanel panel = new JPanel(new GridLayout(5, 1));
+    JPanel panel = new JPanel(new GridLayout(9, 1));
     panel.setOpaque(false);
 
     JPanel idxPath = new JPanel(new FlowLayout(FlowLayout.LEADING));
@@ -194,8 +202,22 @@ public final class OpenIndexDialogFactory implements DialogOpener.DialogFactory 
     readOnly.add(readOnlyCB);
     JLabel roIconLB = new JLabel(FontUtils.elegantIconHtml("&#xe06c;"));
     readOnly.add(roIconLB);
+
+    JPanel customFields = new JPanel(new FlowLayout(FlowLayout.LEADING));
+    customFields.setOpaque(false);
+    customFields.add(getFromURICB);
+    customFields.add(new JLabel("Get Index from GCS URI"));
+    customFields.add(customBucketProjectIdCB);
+    customFields.add(new JLabel("Use custom project & bucket name"));
+
     panel.add(new JLabel("Enter URL here"));
     panel.add(gsURITxtField);
+    panel.add(new JLabel("Enter Project ID"));
+    gsProjectTxtField.setText("shopify-cloud-es");
+    panel.add(gsProjectTxtField);
+    panel.add(new JLabel("Enter Bucket Name"));
+    panel.add(gsBucketTxtField);
+    panel.add(customFields);
     panel.add(readOnly);
 
     return panel;
@@ -324,11 +346,20 @@ public final class OpenIndexDialogFactory implements DialogOpener.DialogFactory 
         if (indexHandler.indexOpened()) {
           indexHandler.close();
         }
-//
+
         String selectedPath = (String) idxPathCombo.getSelectedItem();
+
 //        We can reassign this to be url if URL is not empty
-        if(!gsURITxtField.getText().trim().isEmpty()){
-          selectedPath = GoogleCloudReader.readFromGoogleCloud(gsURITxtField.getText().trim());
+        if(isGetFromURI()){
+          if(!isCustomBucketProject()){
+            selectedPath = GoogleCloudReader.readFromGoogleCloud(gsURITxtField.getText().trim());
+          } else {
+            selectedPath = GoogleCloudReader.readFromGoogleCloud(
+                    gsURITxtField.getText().trim(),
+                    gsBucketTxtField.getText().trim(),
+                    gsProjectTxtField.getText().trim()
+            );
+          }
         }
 
         String dirImplClazz = (String) dirImplCombo.getSelectedItem();
@@ -361,6 +392,12 @@ public final class OpenIndexDialogFactory implements DialogOpener.DialogFactory 
 
     private boolean isReadOnly() {
       return readOnlyCB.isSelected();
+    }
+
+    private boolean isGetFromURI() { return getFromURICB.isSelected(); }
+
+    private boolean isCustomBucketProject() {
+      return customBucketProjectIdCB.isSelected();
     }
 
     private boolean useCompound() {

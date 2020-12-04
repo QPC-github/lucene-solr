@@ -16,8 +16,8 @@
  import java.util.stream.Collectors;
 
  public class GoogleCloudReader {
-   final static String PROJECT_ID = "shopify-cloud-es";
-   final static String BUCKET_NAME = "elasticsearch-hq-wang";
+    final static String PROJECT_ID = "shopify-cloud-es";
+    final static String BUCKET_NAME = "elasticsearch-hq-wang";
 
      public static String readFromGoogleCloud(String uri) throws IOException {
 
@@ -45,6 +45,43 @@
          Page<Blob> blobs = bucket.list(Storage.BlobListOption.prefix(prefix));
          for (Blob blob : blobs.iterateAll()) {
              String path = BUCKET_NAME + "/" + blob.getName();
+             if (!(new File(path)).isDirectory()){
+                 ReadChannel readChannel = blob.reader();
+                 FileOutputStream fileOutputStream = new FileOutputStream(path);
+                 fileOutputStream.getChannel().transferFrom(readChannel, 0, Long.MAX_VALUE);
+                 fileOutputStream.close();
+             }
+         }
+         Path currentPath = Paths.get(System.getProperty("user.dir"));
+         Path filePath = Paths.get(currentPath.toString(), folders.toString());
+         return filePath.toString();
+     }
+
+     public static String readFromGoogleCloud(String uri, String bucketName, String projectId) throws IOException {
+         String[] folderStructure = uri.substring(uri.indexOf(bucketName) + bucketName.length()).split("/");
+
+         StorageOptions options = StorageOptions.newBuilder()
+                 .setProjectId(projectId).build();
+         List<String> paths = Arrays.asList(folderStructure);
+         paths = paths.stream().filter(x -> x != null && !x.isEmpty()).collect(Collectors.toList());
+
+         Storage storage = options.getService();
+         Bucket bucket = storage.get(bucketName);
+         String prefix = String.join("/", paths);
+
+         String[] structure = uri.substring(uri.indexOf(bucketName)).split("/");
+         StringBuilder folders = new StringBuilder();
+
+         for (String s: structure){
+             folders.append(s);
+             folders.append("/");
+             File directory = new File(folders.toString());
+             directory.mkdir();
+         }
+
+         Page<Blob> blobs = bucket.list(Storage.BlobListOption.prefix(prefix));
+         for (Blob blob : blobs.iterateAll()) {
+             String path = bucketName + "/" + blob.getName();
              if (!(new File(path)).isDirectory()){
                  ReadChannel readChannel = blob.reader();
                  FileOutputStream fileOutputStream = new FileOutputStream(path);

@@ -68,7 +68,7 @@ public class LukeMain {
 
       // show open index dialog
       OpenIndexDialogFactory openIndexDialogFactory = OpenIndexDialogFactory.getInstance();
-      new DialogOpener<>(openIndexDialogFactory).open(MessageUtils.getLocalizedMessage("openindex.dialog.title"), 600, 420,
+      new DialogOpener<>(openIndexDialogFactory).open(MessageUtils.getLocalizedMessage("openindex.dialog.title"), 800, 680,
           (factory) -> {
           });
     } catch (IOException e) {
